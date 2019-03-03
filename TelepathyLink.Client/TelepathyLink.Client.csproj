@@ -5,4 +5,12 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ImpromptuInterface" Version="7.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TelepathyLink.Core\TelepathyLink.Core.csproj" />
+  </ItemGroup>
+
 </Project>

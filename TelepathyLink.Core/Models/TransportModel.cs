@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TelepathyLink.Core.Models
 {
-    internal class TransportModel
+    public class TransportModel
     {
         public Guid Identifier { get; set; }
 
@@ -11,6 +11,8 @@ namespace TelepathyLink.Core.Models
 
         public string Method { get; set; }
 
-        public IDictionary<string, object> Parameters { get; set; }
+        public object[] Parameters { get; set; }
+
+        public object ReturnValue { get; set; }
     }
 }
