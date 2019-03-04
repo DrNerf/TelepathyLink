@@ -24,11 +24,35 @@ namespace TelepathyLink.Core
             TelepathyTcpCommonClient = TelepathyServer;
         }
 
+        public void RegisterContracts()
+        {
+            var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
+            var contracts = allTypes.Where(t => t.CustomAttributes.Any(ca => ca.AttributeType == typeof(ContractAttribute)));
+            var contractImplementations = new Dictionary<Type, Type>();
+            foreach (var contract in contracts)
+            {
+                var implementations = allTypes.Where(
+                    t => t.GetInterfaces().Contains(contract) && t.CustomAttributes.Any(ca => ca.AttributeType == typeof(ImplementationAttribute)));
+                if (!implementations.Any())
+                {
+                    throw new Exception($"Could not find implementation class for contract {contract.Name}. Try decorating it with the Implementation attribute.");
+                }
+                else if (implementations.Count() > 1)
+                {
+                    throw new Exception($"Multiple implementations found for contract {contract.Name}.");
+                }
+
+                contractImplementations.Add(contract, implementations.First());
+            }
+
+            RegisterContracts(contractImplementations);
+        }
+
         public void RegisterContracts(IEnumerable<KeyValuePair<Type, Type>> contracts)
         {
             foreach (var contract in contracts)
             {
-                ValidateTypeIsContract(contract.Value);
+                ValidateTypeIsContract(contract.Key);
                 var impl = contract.Value.GetConstructor(Type.EmptyTypes).Invoke(null);
                 m_Contracts.Add(contract.Key.FullName, impl);
             }

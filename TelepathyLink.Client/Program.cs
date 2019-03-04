@@ -10,7 +10,7 @@ namespace TelepathyLink.Client
         static void Main(string[] args)
         {
             var server = new LinkServer();
-            server.RegisterContractImplementation<ITest, TestImpl>(new TestImpl());
+            server.RegisterContracts();
             server.Start(8080);
 
             var client = new LinkClient();
@@ -31,6 +31,7 @@ namespace TelepathyLink.Client
         string Test(string test);
     }
 
+    [Implementation]
     public class TestImpl : ITest
     {
         public string Test(string test)
