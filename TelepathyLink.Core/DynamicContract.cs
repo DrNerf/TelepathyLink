@@ -20,7 +20,7 @@ namespace TelepathyLink.Core
             };
 
             result = InvokeMember.Invoke(model);
-            return result != null;
+            return true;
         }
     }
 }

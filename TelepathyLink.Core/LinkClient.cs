@@ -2,19 +2,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Xml.Serialization;
 using Telepathy;
 using TelepathyLink.Core.Attributes;
 using TelepathyLink.Core.Models;
 
 namespace TelepathyLink.Core
 {
-    public class LinkClient
+    public class LinkClient : AbstractLink
     {
         private IDictionary<Guid, TransportModel> m_PendingResponses;
 
@@ -24,6 +19,7 @@ namespace TelepathyLink.Core
         {
             TelepathyClient = new Client();
             m_PendingResponses = new ConcurrentDictionary<Guid, TransportModel>();
+            TelepathyTcpCommonClient = TelepathyClient;
         }
 
         public TContract GetContract<TContract>()
@@ -46,45 +42,18 @@ namespace TelepathyLink.Core
         public void Setup(string ip, int port, int listeningInterval = 200)
         {
             TelepathyClient.Connect(ip, port);
-            StartListening(listeningInterval);
-        }
-
-        private void StartListening(int pollInterval)
-        {
-            new Thread(new ThreadStart(() =>
-            {
-                while (true)
-                {
-                    Message msg;
-                    while (TelepathyClient.GetNextMessage(out msg))
-                    {
-                        switch (msg.eventType)
-                        {
-                            case EventType.Data:
-                                Console.WriteLine("Data: " + BitConverter.ToString(msg.data));
-                                OnDataReceived(msg);
-                                break;
-                        }
-                    }
-
-                    Thread.Sleep(pollInterval);
-                }
-            })).Start();
+            StartListening(listeningInterval, OnDataReceived);
         }
 
         private void OnDataReceived(Message msg)
         {
-            var serializer = new XmlSerializer(typeof(TransportModel));
-            using (var reader = new StringReader(BitConverter.ToString(msg.data)))
+            var transport = DeserializeTransport(msg.data);
+            if (m_PendingResponses.ContainsKey(transport.Identifier))
             {
-                var transport = serializer.Deserialize(reader) as TransportModel;
-                if (m_PendingResponses.ContainsKey(transport.Identifier))
-                {
-                    m_PendingResponses.Remove(transport.Identifier);
-                }
-
-                m_PendingResponses.Add(transport.Identifier, transport);
+                m_PendingResponses.Remove(transport.Identifier);
             }
+
+            m_PendingResponses.Add(transport.Identifier, transport);
         }
 
         private object OnContractMethodInvoked(InvocationModel model)
@@ -93,26 +62,22 @@ namespace TelepathyLink.Core
             {
                 Identifier = Guid.NewGuid(),
                 Contract = model.Contract,
-                Method = model.Method
+                Method = model.Method,
+                Parameters = model.Arguments
             };
-            var serializer = new XmlSerializer(transport.GetType());
-            byte[] transportBytes;
-            using (var stream = new MemoryStream())
-            {
-                serializer.Serialize(stream, transport);
-                transportBytes = stream.ToArray();
-            }
+            
+            TelepathyClient.Send(SerializeTransport(transport));
+            var response = WaitForReponse(transport.Identifier);
 
-            TelepathyClient.Send(transportBytes);
-            transport = WaitForReponse(transport);
-
-            return transport.ReturnValue;
+            return response.ReturnValue;
         }
 
-        private TransportModel WaitForReponse(TransportModel transport)
+        private TransportModel WaitForReponse(Guid identifier)
         {
+            TransportModel transport;
+
             // Lets block the thread while waiting.
-            while (!ResponseAvailable(transport.Identifier, out transport))
+            while (!ResponseAvailable(identifier, out transport))
             {
                 // Do nothing.
             }
