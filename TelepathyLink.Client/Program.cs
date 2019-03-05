@@ -13,30 +13,7 @@ namespace TelepathyLink.Client
             server.RegisterContracts();
             server.Start(8080);
 
-            var client = new LinkClient();
-            Thread.Sleep(1000);
-            client.Setup("127.0.0.1", 8080);
-            var test = client.GetContract<ITest>();
-            Console.WriteLine("Client: Test");
-            Console.WriteLine(test.Test("Marco"));
-            
-
             Console.ReadLine();
-        }
-    }
-
-    [Contract]
-    public interface ITest
-    {
-        string Test(string test);
-    }
-
-    [Implementation]
-    public class TestImpl : ITest
-    {
-        public string Test(string test)
-        {
-           return test + " Pollo!";
         }
     }
 }
