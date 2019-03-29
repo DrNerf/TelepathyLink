@@ -56,12 +56,13 @@ namespace TelepathyLink.Core
             }
         }
 
-        protected TransportModel DeserializeTransport(byte[] raw)
+        protected TTransport DeserializeTransport<TTransport>(byte[] raw)
+            where TTransport : class
         {
-            var serializer = new XmlSerializer(typeof(TransportModel));
+            var serializer = new XmlSerializer(typeof(TTransport));
             using (var reader = new StringReader(Encoding.UTF8.GetString(raw)))
             {
-                return serializer.Deserialize(reader) as TransportModel;
+                return serializer.Deserialize(reader) as TTransport;
             }
         }
     }

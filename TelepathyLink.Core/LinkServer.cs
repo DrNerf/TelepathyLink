@@ -72,26 +72,56 @@ namespace TelepathyLink.Core
             StartListening(listeningInterval, OnMessageReceived);
         }
 
+        public void PublishEvent<TParameter>(int clientId, TParameter param, SubscriptionModel model)
+        {
+
+        }
+
         private void OnMessageReceived(Message message)
         {
-            var transport = DeserializeTransport(message.data);
+            var transport = DeserializeTransport<TransportModel>(message.data);
             if (m_Contracts.TryGetValue(transport.Contract, out var contract))
             {
                 var contractType = contract.GetType();
-                var result = contractType.InvokeMember(
-                    transport.Method,
-                    BindingFlags.InvokeMethod,
-                    Type.DefaultBinder,
-                    contract,
-                    transport.Parameters);
-                transport.ReturnValue = result;
-
-                TelepathyServer.Send(message.connectionId, SerializeTransport(transport));
+                if (transport.Type == TransportType.Method)
+                {
+                    var result = contractType.InvokeMember(
+                                transport.Method,
+                                BindingFlags.InvokeMethod,
+                                Type.DefaultBinder,
+                                contract,
+                                transport.Parameters);
+                    transport.ReturnValue = result; 
+                    TelepathyServer.Send(message.connectionId, SerializeTransport(transport));
+                }
+                else
+                {
+                    var handler = contractType.GetEvent(transport.EventHandler);
+                    handler.AddEventHandler(
+                        contract,
+                        GetEventCallback(handler, contract, message.connectionId, transport));
+                }
             }
             else
             {
                 //TODO: I dunno, handle this somehow.
             }
+        }
+
+        private Delegate GetEventCallback(
+            EventInfo eventInfo,
+            object contract,
+            int connectionId,
+            TransportModel transport)
+        {
+            return new Action<int, object>((clientId, param) => 
+            {
+                if (clientId == connectionId)
+                {
+                    transport.Parameters = new object[] { param };
+                    TelepathyServer.Send(connectionId, SerializeTransport(transport));
+                }
+            });
         }
     }
 }

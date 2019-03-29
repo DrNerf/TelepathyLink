@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using TelepathyLink.Core;
-using TelepathyLink.Core.Attributes;
 
 namespace TelepathyLink.Client
 {
@@ -13,6 +12,11 @@ namespace TelepathyLink.Client
             server.RegisterContracts();
             server.Start(8080);
 
+            Thread.Sleep(1000);
+            var client = new LinkClient();
+            client.Setup("127.0.0.1", 8080);
+            var contract = client.GetContract<ITestContract>();
+            contract.StrikeBack.Subscribe(() => { Console.WriteLine("Kick back!"); });
             Console.ReadLine();
         }
     }

@@ -12,6 +12,7 @@ namespace TelepathyLink.Core
     public class LinkClient : AbstractLink
     {
         private IDictionary<Guid, TransportModel> m_PendingResponses;
+        private IDictionary<Guid, Delegate> m_ActiveSubscriptions;
 
         public Client TelepathyClient { get; set; }
 
@@ -19,6 +20,7 @@ namespace TelepathyLink.Core
         {
             TelepathyClient = new Client();
             m_PendingResponses = new ConcurrentDictionary<Guid, TransportModel>();
+            m_ActiveSubscriptions = new ConcurrentDictionary<Guid, Delegate>();
             TelepathyTcpCommonClient = TelepathyClient;
         }
 
@@ -45,15 +47,39 @@ namespace TelepathyLink.Core
             StartListening(listeningInterval, OnDataReceived);
         }
 
+        public void SubscribeToEvent(Delegate callback, SubscriptionModel model)
+        {
+            var transport = new TransportModel()
+            {
+                Contract = model.Contract,
+                Identifier = Guid.NewGuid(),
+                Type = TransportType.Event,
+                EventHandler = model.EventHandler
+            };
+
+            m_ActiveSubscriptions.Add(transport.Identifier, callback);
+            TelepathyClient.Send(SerializeTransport(transport));
+        }
+
         private void OnDataReceived(Message msg)
         {
-            var transport = DeserializeTransport(msg.data);
-            if (m_PendingResponses.ContainsKey(transport.Identifier))
+            var transport = DeserializeTransport<TransportModel>(msg.data);
+            if (transport.Type == TransportType.Method)
             {
-                m_PendingResponses.Remove(transport.Identifier);
-            }
+                if (m_PendingResponses.ContainsKey(transport.Identifier))
+                {
+                    m_PendingResponses.Remove(transport.Identifier);
+                }
 
-            m_PendingResponses.Add(transport.Identifier, transport);
+                m_PendingResponses.Add(transport.Identifier, transport); 
+            }
+            else
+            {
+                if (m_ActiveSubscriptions.TryGetValue(transport.Identifier, out var callback))
+                {
+                    callback.DynamicInvoke(transport.Parameters);
+                }
+            }
         }
 
         private object OnContractMethodInvoked(InvocationModel model)
@@ -63,7 +89,8 @@ namespace TelepathyLink.Core
                 Identifier = Guid.NewGuid(),
                 Contract = model.Contract,
                 Method = model.Method,
-                Parameters = model.Arguments
+                Parameters = model.Arguments,
+                Type = TransportType.Method
             };
             
             TelepathyClient.Send(SerializeTransport(transport));

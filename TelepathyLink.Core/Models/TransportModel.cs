@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace TelepathyLink.Core.Models
 {
@@ -9,10 +8,14 @@ namespace TelepathyLink.Core.Models
 
         public string Contract { get; set; }
 
+        public string EventHandler { get; set; }
+
         public string Method { get; set; }
 
         public object[] Parameters { get; set; }
 
         public object ReturnValue { get; set; }
+
+        public TransportType Type { get; set; }
     }
 }

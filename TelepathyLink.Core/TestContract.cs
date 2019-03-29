@@ -5,6 +5,8 @@ namespace TelepathyLink.Core
     [Implementation]
     public class TestContract : ITestContract
     {
+        public LinkedEventHandler StrikeBack { get; set; }
+
         public string Marco()
         {
             return "Polo!";
@@ -15,5 +17,7 @@ namespace TelepathyLink.Core
     public interface ITestContract
     {
         string Marco();
+
+        LinkedEventHandler StrikeBack { get; set; }
     }
 }
