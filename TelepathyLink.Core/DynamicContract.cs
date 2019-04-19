@@ -33,14 +33,14 @@ namespace TelepathyLink.Core
             //    ParameterType = null // @ST Looks like this is not needed for now.
             //});
             var handler = new LinkedEventHandler();
-            handler.Published += (sender, client) => OnSubscribed(client, binder.Name, null, null);
-            handler.PublishedWithCallback += (sender, data) => OnSubscribed(data.Item1, binder.Name, null, data.Item2);
+            handler.Subscribed += (sender, callback) => OnSubscribed(binder.Name, null, callback);
+            handler.Subscribed += (sender, callback) => OnSubscribed(binder.Name, null, callback);
 
             result = handler;
             return true;
         }
 
-        private void OnSubscribed(int clientId, string handler, Type paramType, Delegate callback)
+        private void OnSubscribed(string handler, Type paramType, Delegate callback)
         {
             var model = new SubscriptionModel()
             {

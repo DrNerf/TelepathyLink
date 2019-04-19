@@ -54,12 +54,20 @@ namespace TelepathyLink.Core
             {
                 ValidateTypeIsContract(contract.Key);
                 var impl = contract.Value.GetConstructor(Type.EmptyTypes).Invoke(null);
+                var properties = contract.Value.GetProperties();
+                foreach (var prop in properties)
+                {
+                    if (prop.PropertyType == typeof(ILinkedEventHandler))
+                    {
+                        prop.SetValue(impl, new LinkedEventHandler());
+                    }
+                }
                 m_Contracts.Add(contract.Key.FullName, impl);
             }
         }
 
         public void RegisterContractImplementation<TContract, TImplementation>(TImplementation impl)
-            where TContract : class 
+            where TContract : class
             where TImplementation : TContract
         {
             ValidateTypeIsContract(typeof(TContract));
@@ -91,7 +99,7 @@ namespace TelepathyLink.Core
                                 Type.DefaultBinder,
                                 contract,
                                 transport.Parameters);
-                    transport.ReturnValue = result; 
+                    transport.ReturnValue = result;
                     TelepathyServer.Send(message.connectionId, SerializeTransport(transport));
                 }
                 else
@@ -114,7 +122,7 @@ namespace TelepathyLink.Core
             int connectionId,
             TransportModel transport)
         {
-            return new Action<int, object>((clientId, param) => 
+            return new Action<int, object>((clientId, param) =>
             {
                 if (clientId == connectionId)
                 {

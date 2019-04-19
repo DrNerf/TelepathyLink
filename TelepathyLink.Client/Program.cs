@@ -17,6 +17,8 @@ namespace TelepathyLink.Client
             client.Setup("127.0.0.1", 8080);
             var contract = client.GetContract<ITestContract>();
             contract.StrikeBack.Subscribe(() => { Console.WriteLine("Kick back!"); });
+            Console.WriteLine("Subscribed");
+            //TestContract.Instance.StrikeBack.Publish(1);
             Console.ReadLine();
         }
     }
