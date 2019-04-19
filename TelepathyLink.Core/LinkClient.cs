@@ -32,6 +32,7 @@ namespace TelepathyLink.Core
             {
                 var dynamicContract = new DynamicContract();
                 dynamicContract.InvokeMember = OnContractMethodInvoked;
+                dynamicContract.SubscribeToEvent = OnSubscribeToEvent;
                 dynamicContract.Contract = typeof(TContract).FullName;
                 return Impromptu.ActLike<TContract>(dynamicContract);
             }
@@ -47,7 +48,7 @@ namespace TelepathyLink.Core
             StartListening(listeningInterval, OnDataReceived);
         }
 
-        public void SubscribeToEvent(Delegate callback, SubscriptionModel model)
+        public void OnSubscribeToEvent(SubscriptionModel model, Delegate callback)
         {
             var transport = new TransportModel()
             {

@@ -6,6 +6,7 @@ namespace TelepathyLink.Core
     {
         public event EventHandler<Delegate> Subscribed;
         public event EventHandler<int> Published;
+        public event EventHandler<Tuple<int, Delegate>> PublishedWithCallback;
 
         public virtual void Subscribe(Action callback)
         {
@@ -16,21 +17,15 @@ namespace TelepathyLink.Core
         {
             Published?.Invoke(this, clientId);
         }
-    }
 
-    public class LinkedEventHandler<TParameter>
-    {
-        public event EventHandler<Delegate> Subscribed;
-        public event EventHandler<Tuple<int, Delegate>> Published;
-
-        public virtual void Subscribe(Action<TParameter> callback)
+        public virtual void Subscribe<TParameter>(Action<TParameter> callback)
         {
             Subscribed?.Invoke(this, callback);
         }
 
-        public virtual void Publish(int clientId, Action<TParameter> param)
+        public virtual void Publish<TParameter>(int clientId, Action<TParameter> param)
         {
-            Published?.Invoke(this, new Tuple<int, Delegate>(clientId, param));
+            PublishedWithCallback?.Invoke(this, new Tuple<int, Delegate>(clientId, param));
         }
     }
 }
