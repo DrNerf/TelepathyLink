@@ -5,7 +5,7 @@ namespace TelepathyLink.Core.Exceptions
     public class DynamicMemberHandlingException : NotImplementedException
     {
         public DynamicMemberHandlingException()
-            : base("Call to the dynamic member is not handled. If you see this exception please reach out for support.")
+            : base("Call to the dynamic member is not handled. This exception signals there is a contract mismatch between the client and the server.")
         {
         }
 

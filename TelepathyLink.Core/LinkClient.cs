@@ -45,7 +45,7 @@ namespace TelepathyLink.Core
         public void Setup(string ip, int port, int listeningInterval = 200)
         {
             TelepathyClient.Connect(ip, port);
-            StartListening(listeningInterval, OnDataReceived);
+            StartListening(listeningInterval);
         }
 
         public void OnSubscribeToEvent(SubscriptionModel model, Delegate callback)
@@ -62,7 +62,7 @@ namespace TelepathyLink.Core
             TelepathyClient.Send(SerializeTransport(transport));
         }
 
-        private void OnDataReceived(Message msg)
+        protected override void OnMessageReceived(Message msg)
         {
             var transport = DeserializeTransport<TransportModel>(msg.data);
             if (transport.Type == TransportType.Method)

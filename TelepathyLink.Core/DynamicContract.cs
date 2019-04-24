@@ -26,14 +26,7 @@ namespace TelepathyLink.Core
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            //SubscribeToEvent?.Invoke(this, new SubscriptionModel()
-            //{
-            //    Contract = Contract,
-            //    EventHandler = binder.Name,
-            //    ParameterType = null // @ST Looks like this is not needed for now.
-            //});
-            var handler = new LinkedEventHandler();
-            handler.Subscribed += (sender, callback) => OnSubscribed(binder.Name, null, callback);
+            var handler = new LinkedEventClientHandler();
             handler.Subscribed += (sender, callback) => OnSubscribed(binder.Name, null, callback);
 
             result = handler;
@@ -46,7 +39,7 @@ namespace TelepathyLink.Core
             {
                 Contract = Contract,
                 EventHandler = handler,
-                //ParameterType = paramType @ST Not needed for now.
+                ParameterType = paramType // @ST Not needed for now.
             };
 
             SubscribeToEvent.Invoke(model, callback);

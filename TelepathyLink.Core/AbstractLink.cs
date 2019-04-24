@@ -14,8 +14,6 @@ namespace TelepathyLink.Core
     {
         protected Common TelepathyTcpCommonClient;
 
-        public event EventHandler<Message> MessageReceived;
-
         protected virtual void ValidateTypeIsContract(Type contract)
         {
             if (!contract.CustomAttributes.Any(ca => ca.AttributeType == typeof(ContractAttribute)))
@@ -24,21 +22,18 @@ namespace TelepathyLink.Core
             }
         }
 
-        protected void StartListening(int pollInterval, Action<Message> newDataMessageReceived)
+        protected void StartListening(int pollInterval)
         {
             new Thread(new ThreadStart(() =>
             {
                 while (true)
                 {
-                    Message msg;
-                    while (TelepathyTcpCommonClient.GetNextMessage(out msg))
+                    while (TelepathyTcpCommonClient.GetNextMessage(out var msg))
                     {
                         if (msg.eventType == EventType.Data)
                         {
-                            newDataMessageReceived.Invoke(msg);
+                            OnMessageReceived(msg);
                         }
-
-                        MessageReceived?.Invoke(this, msg);
                     }
 
                     Thread.Sleep(pollInterval);
@@ -64,6 +59,10 @@ namespace TelepathyLink.Core
             {
                 return serializer.Deserialize(reader) as TTransport;
             }
+        }
+
+        protected virtual void OnMessageReceived(Message message)
+        {
         }
     }
 }
