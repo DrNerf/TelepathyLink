@@ -15,14 +15,14 @@ namespace TelepathyLink.Core
     public class LinkServer : AbstractLink
     {
         private readonly IDictionary<string, object> contracts;
-        private readonly IDictionary<string, IList<Tuple<int, Guid>>> subscriptions;
+        private readonly IDictionary<string, IList<SubscriberModel>> subscriptions;
 
         public Server TelepathyServer { get; set; }
 
         public LinkServer()
         {
             contracts = new ConcurrentDictionary<string, object>();
-            subscriptions = new ConcurrentDictionary<string, IList<Tuple<int, Guid>>>();
+            subscriptions = new ConcurrentDictionary<string, IList<SubscriberModel>>();
             TelepathyServer = new Server();
             TelepathyTcpCommonClient = TelepathyServer;
         }
@@ -63,7 +63,7 @@ namespace TelepathyLink.Core
                     if (prop.PropertyType == typeof(ILinkedEventHandler))
                     {
                         var handler = new LinkedEventServerHandler(
-                            contract.Key.Name,
+                            contract.Key.FullName,
                             prop.Name,
                             this);
 
@@ -89,46 +89,41 @@ namespace TelepathyLink.Core
             StartListening(listeningInterval);
         }
 
-        public void PublishEvent<TParameter>(int clientId, TParameter param, SubscriptionModel model, Guid? identifier)
+        public void PublishEvent(object param, bool hasParams, SubscriptionModel model)
         {
-            var transport = new TransportModel()
-            {
-                Contract = model.Contract,
-                EventHandler = model.EventHandler,
-                Type = TransportType.Event,
-                Parameters = new object[] { param }
-            };
-
-            if (!identifier.HasValue)
-            {
-                var subscribers = subscriptions[GetSubsciptionIdentifier(transport)];
-                var clientSubscription = subscribers.First(s => s.Item1 == clientId);
-                identifier = clientSubscription.Item2;
-            }
-
-            transport.Identifier = identifier.Value;
-            TelepathyServer.Send(clientId, SerializeTransport(transport));
-        }
-
-        public void PublishEvent<TParameter>(TParameter param, SubscriptionModel model)
-        {
-            var transport = new TransportModel()
-            {
-                Contract = model.Contract,
-                EventHandler = model.EventHandler,
-                Type = TransportType.Event,
-                Parameters = new object[] { param }
-            };
-            
-            var subscribers = subscriptions[GetSubsciptionIdentifier(transport)];
-            if (subscriptions.TryGetValue(GetSubsciptionIdentifier(transport), out var clients))
+            if (subscriptions.TryGetValue(GetSubsciptionIdentifier(model), out var clients))
             {
                 foreach (var client in clients)
                 {
-                    transport.Identifier = client.Item2;
-                    TelepathyServer.Send(client.Item1, SerializeTransport(transport));
+                    PublishEvent(client.ClientId, client.TransportIdentifier, param, hasParams, model);
                 }
             }
+        }
+
+        public void PublishEvent(int clientId, object param, bool hasParams, SubscriptionModel model)
+        {
+            if (subscriptions.TryGetValue(GetSubsciptionIdentifier(model), out var clients))
+            {
+                var client = clients.FirstOrDefault(c => c.ClientId == clientId);
+                if (client != null)
+                {
+                    PublishEvent(client.ClientId, client.TransportIdentifier, param, hasParams, model);
+                }
+            }
+        }
+
+        public void PublishEvent(int clientId, Guid identifier, object param, bool hasParams, SubscriptionModel model)
+        {
+            var transport = new TransportModel()
+            {
+                Contract = model.Contract,
+                EventHandler = model.EventHandler,
+                Type = TransportType.Event,
+                Parameters = hasParams ? new object[] { param } : Array.Empty<object>(),
+                Identifier = identifier
+            };
+            
+            TelepathyServer.Send(clientId, SerializeTransport(transport));
         }
 
         protected override void OnMessageReceived(Message message)
@@ -151,8 +146,7 @@ namespace TelepathyLink.Core
                 else
                 {
                     var handlerInfo = contractType.GetProperty(transport.EventHandler);
-                    var handler = handlerInfo.GetValue(contract) as ILinkedEventHandler;
-                    if (handler == null)
+                    if (!(handlerInfo.GetValue(contract) is ILinkedEventHandler handler))
                     {
                         throw new DynamicMemberHandlingException();
                     }
@@ -160,13 +154,13 @@ namespace TelepathyLink.Core
                     var subIdentifier = GetSubsciptionIdentifier(transport);
                     if (subscriptions.TryGetValue(subIdentifier, out var subscribers))
                     {
-                        subscribers.Add(new Tuple<int, Guid>(message.connectionId, transport.Identifier));
+                        subscribers.Add(new SubscriberModel(message.connectionId, transport.Identifier));
                     }
                     else
                     {
-                        var subscription = new List<Tuple<int, Guid>>()
+                        var subscription = new List<SubscriberModel>()
                         {
-                            new Tuple<int, Guid>(message.connectionId, transport.Identifier)
+                            new SubscriberModel(message.connectionId, transport.Identifier)
                         };
 
                         subscriptions.Add(subIdentifier, subscription);
@@ -180,6 +174,11 @@ namespace TelepathyLink.Core
         }
 
         private string GetSubsciptionIdentifier(TransportModel model)
+        {
+            return $"{model.Contract} {model.EventHandler}";
+        }
+
+        private string GetSubsciptionIdentifier(SubscriptionModel model)
         {
             return $"{model.Contract} {model.EventHandler}";
         }

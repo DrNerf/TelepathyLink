@@ -82,7 +82,7 @@ namespace TelepathyLink.Core
                 ParameterType = null // @ST not needed for now.
             };
 
-            Server.PublishEvent<object>(clientId, null, model, null);
+            Server.PublishEvent(clientId, null, false, model);
         }
 
         public void Publish<TParameter>(int clientId, TParameter param)
@@ -94,7 +94,7 @@ namespace TelepathyLink.Core
                 ParameterType = null // @ST not needed for now.
             };
 
-            Server.PublishEvent(clientId, param, model, null);
+            Server.PublishEvent(clientId, param, true, model);
         }
 
         public void Publish()
@@ -106,7 +106,7 @@ namespace TelepathyLink.Core
                 ParameterType = null // @ST not needed for now.
             };
 
-            Server.PublishEvent<object>(null, model);
+            Server.PublishEvent(null, false, model);
         }
 
         public void Publish<TParameter>(TParameter param)
@@ -118,7 +118,7 @@ namespace TelepathyLink.Core
                 ParameterType = null // @ST not needed for now.
             };
 
-            Server.PublishEvent(param, model);
+            Server.PublishEvent(param, true, model);
         }
     }
 }

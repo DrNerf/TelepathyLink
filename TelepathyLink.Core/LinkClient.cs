@@ -78,7 +78,7 @@ namespace TelepathyLink.Core
             {
                 if (m_ActiveSubscriptions.TryGetValue(transport.Identifier, out var callback))
                 {
-                    callback.DynamicInvoke(transport.Parameters);
+                    callback.DynamicInvoke(transport.Parameters); //filter out null values
                 }
             }
         }

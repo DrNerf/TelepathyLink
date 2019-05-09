@@ -18,7 +18,9 @@ namespace TelepathyLink.Client
             var contract = client.GetContract<ITestContract>();
             contract.StrikeBack.Subscribe(() => { Console.WriteLine("Kick back!"); });
             Console.WriteLine("Subscribed");
-            //TestContract.Instance.StrikeBack.Publish(1);
+            Thread.Sleep(1000);
+            Console.WriteLine("Publishing");
+            TestContract.Instance.StrikeBack.Publish(1);
             Console.ReadLine();
         }
     }
