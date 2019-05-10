@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TelepathyLink.Core", "Telep
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telepathy", "Telepathy\Telepathy\Telepathy.csproj", "{8BA269BC-DCC8-4EE0-8DB5-43E3F992FC15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelepathyLink.Client", "TelepathyLink.Client\TelepathyLink.Client.csproj", "{2EC5EE62-5F27-41DE-833E-E01284D53C81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TelepathyLink.Client", "TelepathyLink.Client\TelepathyLink.Client.csproj", "{2EC5EE62-5F27-41DE-833E-E01284D53C81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelepathyLink.Tests", "TelepathyLink.Tests\TelepathyLink.Tests.csproj", "{5E89138A-D57F-4C99-A992-36E214F9F10A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{2EC5EE62-5F27-41DE-833E-E01284D53C81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EC5EE62-5F27-41DE-833E-E01284D53C81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EC5EE62-5F27-41DE-833E-E01284D53C81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E89138A-D57F-4C99-A992-36E214F9F10A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E89138A-D57F-4C99-A992-36E214F9F10A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E89138A-D57F-4C99-A992-36E214F9F10A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E89138A-D57F-4C99-A992-36E214F9F10A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
