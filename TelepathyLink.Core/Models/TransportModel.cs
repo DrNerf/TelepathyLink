@@ -2,6 +2,7 @@
 
 namespace TelepathyLink.Core.Models
 {
+    [Serializable]
     public class TransportModel
     {
         public Guid Identifier { get; set; }

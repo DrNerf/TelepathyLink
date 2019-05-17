@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Xml.Serialization;
@@ -44,13 +44,22 @@ namespace TelepathyLink.Core
 
         protected byte[] SerializeTransport(TransportModel model)
         {
-            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(model));
+            var serializer = new BinaryFormatter();
+            using (var stream = new MemoryStream())
+            {
+                serializer.Serialize(stream, model);
+                return stream.ToArray();
+            }
         }
 
         protected TTransport DeserializeTransport<TTransport>(byte[] raw)
             where TTransport : class
         {
-            return JsonConvert.DeserializeObject<TTransport>(Encoding.UTF8.GetString(raw));
+            var serializer = new BinaryFormatter();
+            using (var stream = new MemoryStream(raw))
+            {
+                return serializer.Deserialize(stream) as TTransport;
+            }
         }
 
         protected virtual void OnMessageReceived(Message message)

@@ -24,7 +24,7 @@ namespace TelepathyLink.Tests
         }
 
         [Theory]
-        [InlineData(new int[] { 1, 1, 2, 4 }, 6)]
+        [InlineData(new int[] { 1, 0, 2, 5 }, 8)]
         [InlineData(new int[] { 10, 15, 20, 55 }, 100)]
         [InlineData(new int[] { 2000, 50000 }, 52000)]
         public void TestCollectionParam(IEnumerable<int> numbers, int expected)
@@ -32,7 +32,6 @@ namespace TelepathyLink.Tests
             Assert.Equal(expected, TestContract.Sum(numbers.ToArray()));
             Assert.Equal(expected, TestContract.Sum(numbers.ToList()));
             Assert.Equal(expected, TestContract.Sum(numbers.ToHashSet()));
-            Assert.Equal(expected, TestContract.Sum(numbers.Where(n => true)));
         }
     }
 }
