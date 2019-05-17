@@ -1,18 +1,24 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
-using System.Xml.Serialization;
 using Telepathy;
 using TelepathyLink.Core.Attributes;
+using TelepathyLink.Core.Helpers;
 using TelepathyLink.Core.Models;
 
 namespace TelepathyLink.Core
 {
     public abstract class AbstractLink
     {
+        private JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.All,
+            Formatting = Formatting.Indented
+        };
+
         protected Common TelepathyTcpCommonClient;
 
         protected virtual void ValidateTypeIsContract(Type contract)
@@ -44,13 +50,18 @@ namespace TelepathyLink.Core
 
         protected byte[] SerializeTransport(TransportModel model)
         {
-            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(model));
+            var dynamicTransport = TypeBuilderHelper.GetDynamicTransport(model);
+            string json = JsonConvert.SerializeObject(dynamicTransport, serializerSettings);
+            return Encoding.UTF8.GetBytes(json);
         }
 
         protected TTransport DeserializeTransport<TTransport>(byte[] raw)
             where TTransport : class
         {
-            return JsonConvert.DeserializeObject<TTransport>(Encoding.UTF8.GetString(raw));
+            object transport = JsonConvert.DeserializeObject<dynamic>(
+                Encoding.UTF8.GetString(raw),
+                serializerSettings);
+            return null;
         }
 
         protected virtual void OnMessageReceived(Message message)
