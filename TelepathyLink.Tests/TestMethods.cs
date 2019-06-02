@@ -33,5 +33,27 @@ namespace TelepathyLink.Tests
             Assert.Equal(expected, TestContract.Sum(numbers.ToList()));
             Assert.Equal(expected, TestContract.Sum(numbers.ToHashSet()));
         }
+
+        [Theory]
+        [InlineData(2, 2, 4)]
+        [InlineData(3, 2, 5)]
+        [InlineData(200000, 200000, 400000)]
+        [InlineData(2, null, 2)]
+        [InlineData(null, 2, 2)]
+        [InlineData(null, null, null)]
+        public void TestNullableParamsAndReturnValue(int? left, int? right, int? expected)
+        {
+            Assert.Equal(expected, TestContract.AddNullables(left, right));
+        }
+
+        [Fact]
+        public void TestOverload()
+        {
+            Assert.Equal(8, TestContract.Sum(new int?[] { 1, 0, 2, 5 }));
+            Assert.Equal(100, TestContract.Sum(new int?[] { 10, 15, 20, 55 }));
+            Assert.Equal(52000, TestContract.Sum(new int?[] { 2000, 50000 }));
+            Assert.Equal(50000, TestContract.Sum(new int?[] { null, 50000 }));
+            Assert.Equal(0, TestContract.Sum(new int?[] { null, null }));
+        }
     }
 }

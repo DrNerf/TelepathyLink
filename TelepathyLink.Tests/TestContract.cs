@@ -13,6 +13,10 @@ namespace TelepathyLink.Tests
         int Add(int left, int right);
 
         int Sum(IEnumerable<int> numbers);
+
+        int Sum(IEnumerable<int?> numbers);
+
+        int? AddNullables(int? left, int? right);
     }
 
     [Implementation]
@@ -30,6 +34,21 @@ namespace TelepathyLink.Tests
         public int Sum(IEnumerable<int> numbers)
         {
             return numbers.Sum();
+        }
+
+        public int? AddNullables(int? left, int? right)
+        {
+            if (!left.HasValue && !right.HasValue)
+            {
+                return null;
+            }
+
+            return (left ?? 0) + (right ?? 0);
+        }
+
+        public int Sum(IEnumerable<int?> numbers)
+        {
+            return numbers.Sum() ?? 0;
         }
     }
 }
