@@ -17,11 +17,15 @@ namespace TelepathyLink.Tests
         int Sum(IEnumerable<int?> numbers);
 
         int? AddNullables(int? left, int? right);
+
+        ILinkedEventHandler TestEventHandler { get; set; }
     }
 
     [Implementation]
     public class TestContract : ITestContract
     {
+        public ILinkedEventHandler TestEventHandler { get; set; }
+
         public void SimpleMethod()
         {
         }

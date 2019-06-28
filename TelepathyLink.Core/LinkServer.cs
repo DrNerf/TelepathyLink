@@ -57,19 +57,7 @@ namespace TelepathyLink.Core
             {
                 ValidateTypeIsContract(contract.Key);
                 var impl = contract.Value.GetConstructor(Type.EmptyTypes).Invoke(null);
-                var properties = contract.Value.GetProperties();
-                foreach (var prop in properties)
-                {
-                    if (prop.PropertyType == typeof(ILinkedEventHandler))
-                    {
-                        var handler = new LinkedEventServerHandler(
-                            contract.Key.FullName,
-                            prop.Name,
-                            this);
-
-                        prop.SetValue(impl, handler);
-                    }
-                }
+                FillSystemProperties(contract.Value, contract.Key, ref impl);
 
                 this.contracts.Add(contract.Key.FullName, impl);
             }
@@ -79,7 +67,10 @@ namespace TelepathyLink.Core
             where TContract : class
             where TImplementation : TContract
         {
+            var implObject = impl as object;
             ValidateTypeIsContract(typeof(TContract));
+            FillSystemProperties(typeof(TImplementation), typeof(TContract), ref implObject);
+
             contracts.Add(typeof(TContract).FullName, impl);
         }
 
@@ -197,6 +188,23 @@ namespace TelepathyLink.Core
                     TelepathyServer.Send(connectionId, SerializeTransport(transport));
                 }
             });
+        }
+
+        private void FillSystemProperties(Type implType, Type contractType, ref object impl)
+        {
+            var properties = implType.GetProperties();
+            foreach (var prop in properties)
+            {
+                if (prop.PropertyType == typeof(ILinkedEventHandler))
+                {
+                    var handler = new LinkedEventServerHandler(
+                        contractType.FullName,
+                        prop.Name,
+                        this);
+
+                    prop.SetValue(impl, handler);
+                }
+            }
         }
     }
 }
