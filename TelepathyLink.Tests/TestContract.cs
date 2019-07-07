@@ -22,12 +22,14 @@ namespace TelepathyLink.Tests
     }
 
     [Implementation]
-    public class TestContract : ITestContract
+    public class TestContract : Contract, ITestContract
     {
         public ILinkedEventHandler TestEventHandler { get; set; }
+        public int? LatestConnectionId { get; set; } = null;
 
         public void SimpleMethod()
         {
+            LatestConnectionId = LatestRequest.ConnectionId;
         }
 
         public int Add(int left, int right)

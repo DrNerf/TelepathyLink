@@ -125,6 +125,10 @@ namespace TelepathyLink.Core
                 var contractType = contract.GetType();
                 if (transport.Type == TransportType.Method)
                 {
+                    SetLatestRequest(
+                        new RequestModel() { ConnectionId = message.connectionId },
+                        contract,
+                        contractType);
                     var result = contractType.InvokeMember(
                                 transport.Method,
                                 BindingFlags.InvokeMethod,
@@ -132,6 +136,7 @@ namespace TelepathyLink.Core
                                 contract,
                                 transport.Parameters);
                     transport.ReturnValue = result;
+                    SetLatestRequest(null, contract, contractType);
                     TelepathyServer.Send(message.connectionId, SerializeTransport(transport));
                 }
                 else
@@ -161,6 +166,17 @@ namespace TelepathyLink.Core
             else
             {
                 //TODO: I dunno, handle this somehow.
+            }
+        }
+
+        private void SetLatestRequest(RequestModel value, object contract, Type contractType)
+        {
+            var latestRequestInfo = contractType.GetProperty(
+                "LatestRequest",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            if (latestRequestInfo != null && latestRequestInfo.PropertyType == typeof(RequestModel))
+            {
+                latestRequestInfo.SetValue(contract, value);
             }
         }
 

@@ -1,17 +1,18 @@
-﻿using System;
+using NUnit.Framework;
 using System.Threading;
 using TelepathyLink.Core;
 
 namespace TelepathyLink.Tests
 {
-    public class BaseTest : IDisposable
+    public abstract class TestBase
     {
-        protected LinkServer Server;
-        protected LinkClient Client;
-        protected ITestContract TestContract;
-        protected TestContract TestContractInstance;
+        protected LinkServer Server { get; set; }
+        protected LinkClient Client { get; set; }
+        protected ITestContract TestContract { get; set; }
+        protected TestContract TestContractInstance { get; set; }
 
-        public BaseTest()
+        [SetUp]
+        public void Setup()
         {
             Server = new LinkServer();
             TestContractInstance = new TestContract();
@@ -26,11 +27,14 @@ namespace TelepathyLink.Tests
             TestContract = Client.GetContract<ITestContract>();
         }
 
-        public void Dispose()
+        [TearDown]
+        public void TearDown()
         {
-            //TODO: Disconnect the client and shut down the server.
-            Server = null;
+            Client.Dispose();
+            Server.Dispose();
+
             Client = null;
+            Server = null;
         }
     }
 }

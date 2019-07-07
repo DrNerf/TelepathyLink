@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using NUnit.Framework;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace TelepathyLink.Tests
 {
-    public class TestEvents : BaseTest
+    public class TestEvents : TestBase
     {
-        [Fact]
-        public async void TestSimpleEvent()
+        [Test]
+        public async Task TestSimpleEvent()
         {
             var receivedCallback = false;
             TestContract.TestEventHandler.Subscribe(() => { receivedCallback = true; });
             await Task.Delay(1000);
             TestContractInstance.TestEventHandler.Publish();
             await Task.Delay(1000);
-            Assert.True(receivedCallback);
+            Assert.IsTrue(receivedCallback);
         }
     }
 }

@@ -11,9 +11,21 @@ using TelepathyLink.Core.Models;
 
 namespace TelepathyLink.Core
 {
-    public abstract class AbstractLink
+    public abstract class AbstractLink : IDisposable
     {
         protected Common TelepathyTcpCommonClient;
+
+        public void Dispose()
+        {
+            if (TelepathyTcpCommonClient is Server)
+            {
+                (TelepathyTcpCommonClient as Server).Stop();
+            }
+            else
+            {
+                (TelepathyTcpCommonClient as Client).Disconnect();
+            }
+        }
 
         protected virtual void ValidateTypeIsContract(Type contract)
         {
